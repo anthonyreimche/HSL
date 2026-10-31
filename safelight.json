@@ -1,0 +1,25 @@
+{
+  "id": "safelight.hsl",
+  "name": "HSL",
+  "version": "3.0.0",
+  "description": "Per-color hue, saturation and luminance mixer.",
+  "author": "Anthony Reimche",
+  "main": "dist/index.js",
+  "license": "GPL-3.0-only",
+  "categories": [
+    "color"
+  ],
+  "keywords": [
+    "hsl",
+    "color mixer",
+    "hue",
+    "saturation",
+    "luminance",
+    "target tool"
+  ],
+  "repository": "anthonyreimche/hsl",
+  "worksWith": [
+    "anthonyreimche/Develop"
+  ],
+  "minAppVersion": "3.2.0"
+}
