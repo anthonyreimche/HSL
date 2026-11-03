@@ -220,6 +220,9 @@ export interface SafelightAPI {
     useDevelopStore: StoreApi<DevelopStoreState>;
   };
   develop: {
+    /** A frame of the live view drawn with `params` in place of the photo's,
+     *  aligned 1:1 with the canvas; sRGB. The live view is untouched. */
+    captureFrame(params: DevelopParams): Promise<ImageBitmap>;
     /** Hold the canvas's pick-drag tool, or with null let go of it. */
     setPickDrag(tool: PickDragTool | null): void;
     /** React hook: whether this extension holds the pick-drag tool. */

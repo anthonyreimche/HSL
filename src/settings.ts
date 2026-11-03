@@ -20,7 +20,7 @@ export const SENSITIVITY_DEFAULT = 0.5;
 export const HSL_SETTINGS: SettingsContribution = {
   title: "HSL",
   order: 60,
-  keywords: ["hue", "saturation", "luminance", "color mixer", "target", "tat"],
+  keywords: ["hue", "saturation", "luminance", "colour mixer", "target", "tat"],
   fields: [
     {
       key: "defaultView",

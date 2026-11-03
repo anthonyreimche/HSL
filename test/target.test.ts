@@ -104,3 +104,106 @@ describe("targetTool", () => {
     expect(rig.calls).toEqual([]);
   });
 });
+
+// The view shows each colour after HSL's own shift, so the tool reads the
+// colour under the press from a capture with HSL at its defaults: with Orange
+// Hue at +100 (+30°), an orange renders near yellow, and pressing it must still
+// move Orange, however often it is dragged.
+describe("targetTool over HSL's own adjustment", () => {
+  const ORANGE = [1, 0.5, 0] as const; // 30°
+  const SHOWN = [1, 1, 0] as const; // 60°: that orange after +30°
+  const shifted = { ...DEFAULT_HSL, hue: { ...DEFAULT_HSL.hue, orange: 100 } };
+  const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+  function shiftedRig(original: readonly [number, number, number] | null = ORANGE) {
+    const rig = fakeApi(shifted);
+    initRuntime(rig.api);
+    return { rig, tool: targetTool(rig.api, () => original) };
+  }
+
+  it("moves the band of the colour before HSL, not the one the view shows", async () => {
+    const { rig, tool } = shiftedRig();
+    tool.onDown(SHOWN, { x: 5, y: 100 });
+    tool.onMove({ x: 5, y: 140 });
+    await settle();
+    const { hue } = rig.develop.getState().params.hsl;
+    expect(hue.orange).toBeCloseTo(80);
+    expect(hue.yellow).toBe(0);
+    expect(rig.captures).toEqual([{ hsl: DEFAULT_HSL }]);
+  });
+
+  it("keeps moving Orange on the next drag", async () => {
+    const { rig, tool } = shiftedRig();
+    tool.onDown(SHOWN, { x: 5, y: 100 });
+    tool.onMove({ x: 5, y: 120 });
+    await settle();
+    tool.onUp();
+    tool.onDown(SHOWN, { x: 5, y: 100 });
+    await settle();
+    tool.onMove({ x: 5, y: 120 });
+    const { hue } = rig.develop.getState().params.hsl;
+    expect(hue.orange).toBeCloseTo(80);
+    expect(hue.yellow).toBe(0);
+  });
+
+  it("commits a drag released before the colour is read, once it is", async () => {
+    const { rig, tool } = shiftedRig();
+    tool.onDown(SHOWN, { x: 5, y: 100 });
+    tool.onMove({ x: 5, y: 140 });
+    tool.onUp();
+    expect(rig.calls).toEqual([]);
+    await settle();
+    expect(rig.develop.getState().params.hsl.hue.orange).toBeCloseTo(80);
+    expect(rig.calls.at(-1)).toEqual({ commitEdit: "HSL Picker" });
+  });
+
+  it("falls back to the colour shown when the view can't be captured", async () => {
+    const { rig, tool } = shiftedRig(null);
+    tool.onDown(SHOWN, { x: 5, y: 100 });
+    await settle();
+    tool.onMove({ x: 5, y: 140 });
+    expect(rig.develop.getState().params.hsl.hue.yellow).toBeCloseTo(-20);
+  });
+
+  it("captures nothing while HSL is at its defaults", () => {
+    const { rig, tool } = setup();
+    tool.onDown(GREEN, { x: 0, y: 100 });
+    tool.onMove({ x: 0, y: 90 });
+    expect(rig.captures).toEqual([]);
+    expect(rig.develop.getState().params.hsl.hue.green).toBeCloseTo(5);
+  });
+});
+
+describe("targetTool's history", () => {
+  const settle = () => new Promise((resolve) => setTimeout(resolve, 0));
+
+  it("adds no history step for a click that never moved", () => {
+    const { rig, tool } = setup();
+    tool.onDown(GREEN, { x: 0, y: 100 });
+    tool.onUp();
+    expect(rig.calls).toEqual([]);
+  });
+
+  it("drops a colour read for an earlier press once a later press has begun", async () => {
+    const shifted = { ...DEFAULT_HSL, hue: { ...DEFAULT_HSL.hue, orange: 100 } };
+    const rig = fakeApi(shifted);
+    initRuntime(rig.api);
+    const frames: (() => void)[] = [];
+    const capture = rig.api.develop.captureFrame;
+    rig.api.develop.captureFrame = (params) =>
+      new Promise((resolve) => frames.push(() => void capture(params).then(resolve)));
+    const tool = targetTool(rig.api, () => [1, 0.5, 0]);
+    tool.onDown([1, 1, 0], { x: 5, y: 100 });
+    tool.onMove({ x: 5, y: 200 });
+    tool.onUp();
+    tool.onDown([1, 1, 0], { x: 5, y: 100 });
+    frames[1]();
+    await settle();
+    tool.onMove({ x: 5, y: 120 });
+    frames[0]();
+    await settle();
+    tool.onUp();
+    expect(rig.develop.getState().params.hsl.hue.orange).toBeCloseTo(90);
+    expect(rig.calls.filter((c) => "commitEdit" in c)).toEqual([{ commitEdit: "HSL Picker" }]);
+  });
+});

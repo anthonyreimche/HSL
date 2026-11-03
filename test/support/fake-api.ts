@@ -54,6 +54,8 @@ export interface Rig {
   settingsSections: SettingsContribution[];
   /** The extension's settings, as api.settings reads them. */
   settings: Map<string, unknown>;
+  /** The params each captureFrame was asked to draw, in order. */
+  captures: DevelopParams[];
   /** The tool this extension holds on the canvas, or null. */
   held(): PickDragTool | null;
   /** The mask sub-panel's scope: its bands and its commits. */
@@ -69,6 +71,7 @@ export function fakeApi(hsl: HSLAdjustments = DEFAULT_HSL): Rig {
   const stylesheets: StylesheetContribution[] = [];
   const settingsSections: SettingsContribution[] = [];
   const settings = new Map<string, unknown>();
+  const captures: DevelopParams[] = [];
   const pick = create<{ tool: PickDragTool | null }>(() => ({ tool: null }));
   const mask: Rig["mask"] = { hsl: undefined, commits: [] };
   const sliderProps = new Map<number, SliderProps>();
@@ -118,6 +121,10 @@ export function fakeApi(hsl: HSLAdjustments = DEFAULT_HSL): Rig {
     components: { Panel, Slider, PickerIcon },
     stores: { useDevelopStore: develop },
     develop: {
+      captureFrame: async (params) => {
+        captures.push(params);
+        return { width: 100, height: 100, close: () => {} } as unknown as ImageBitmap;
+      },
       setPickDrag: (tool) => pick.setState({ tool }),
       usePickDragHeld: () => pick((s) => s.tool !== null),
       useMaskScope: (): MaskScope => {
@@ -144,6 +151,7 @@ export function fakeApi(hsl: HSLAdjustments = DEFAULT_HSL): Rig {
     stylesheets,
     settingsSections,
     settings,
+    captures,
     held: () => pick.getState().tool,
     mask,
     sliders: (root) =>
