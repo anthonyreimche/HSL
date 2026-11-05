@@ -189,7 +189,7 @@ var C = "tabs", w = .5, T = {
 		"hue",
 		"saturation",
 		"luminance",
-		"color mixer",
+		"colour mixer",
 		"target",
 		"tat"
 	],
@@ -407,44 +407,91 @@ function z(e) {
 }
 //#endregion
 //#region src/target.ts
-var B = .01;
-function V(e) {
-	let t = null, n = e.stores.useDevelopStore;
+var B = .01, V = {
+	red: 0,
+	orange: 0,
+	yellow: 0,
+	green: 0,
+	aqua: 0,
+	blue: 0,
+	purple: 0,
+	magenta: 0
+}, H = {
+	hue: V,
+	saturation: V,
+	luminance: V
+}, U = (e) => Object.values(e).every((e) => Object.values(e).every((e) => e === 0)), W = null, G = (e, t) => {
+	if (e.width < 1 || e.height < 1) return null;
+	W ??= new OffscreenCanvas(1, 1);
+	let n = W.getContext("2d", { willReadFrequently: !0 });
+	if (!n) return null;
+	let r = Math.min(e.width - 1, Math.max(0, Math.floor(t.x))), i = Math.min(e.height - 1, Math.max(0, Math.floor(t.y)));
+	n.clearRect(0, 0, 1, 1), n.drawImage(e, r, i, 1, 1, 0, 0, 1, 1);
+	let [a, o, s] = n.getImageData(0, 0, 1, 1).data;
+	return [
+		a / 255,
+		o / 255,
+		s / 255
+	];
+};
+function K(e, t = G) {
+	let n = null, r = null, i = e.stores.useDevelopStore, o = ([t, n, r]) => p(m(t, n, r), L(e.settings.get("hueRange", 100), .25, 2), L(e.settings.get("smoothness", 100), 0, 1)), s = (t) => {
+		if (!t.weights || t.y === null) return;
+		t.moved = !0;
+		let n = -(t.y - t.startY) * e.settings.get("pickerSensitivity", w), { hsl: r } = i.getState().params, o = a(), s = { ...r[o] };
+		t.weights.forEach((e, r) => {
+			e < B || (s[l[r]] = Math.max(-100, Math.min(100, t.start[r] + n * e)));
+		}), i.getState().setParam("hsl", {
+			...r,
+			[o]: s
+		});
+	}, c = (e) => {
+		e.moved && i.getState().commitEdit("HSL Picker");
+	}, u = async (n, r) => {
+		let a = await e.develop.captureFrame({
+			...i.getState().params,
+			hsl: H
+		});
+		try {
+			return t(a, r) ?? n;
+		} finally {
+			a.close();
+		}
+	};
 	return {
-		onDown([r, i, o], s) {
-			let c = p(m(r, i, o), L(e.settings.get("hueRange", 100), .25, 2), L(e.settings.get("smoothness", 100), 0, 1)), u = n.getState().params.hsl[a()];
-			t = {
-				startY: s.y,
-				weights: c,
-				start: l.map((e) => u[e])
+		onDown(e, t) {
+			let { hsl: d } = i.getState().params, f = d[a()], p = {
+				startY: t.y,
+				start: l.map((e) => f[e]),
+				weights: null,
+				y: null,
+				moved: !1,
+				released: !1
 			};
-		},
-		onMove(r) {
-			if (!t) return;
-			let i = -(r.y - t.startY) * e.settings.get("pickerSensitivity", w), { hsl: o } = n.getState().params, s = a(), c = { ...o[s] };
-			t.weights.forEach((e, n) => {
-				e < B || (c[l[n]] = Math.max(-100, Math.min(100, t.start[n] + i * e)));
-			}), n.getState().setParam("hsl", {
-				...o,
-				[s]: c
+			n = p, r = p, U(d) ? p.weights = o(e) : u(e, t).catch(() => e).then((e) => {
+				r === p && (p.weights = o(e), s(p), p.released && c(p));
 			});
 		},
+		onMove(e) {
+			n && (n.y = e.y, s(n));
+		},
 		onUp() {
-			t && (t = null, n.getState().commitEdit("HSL Picker"));
+			let e = n;
+			e && (n = null, e.released = !0, e.weights && c(e));
 		}
 	};
 }
 //#endregion
 //#region src/index.tsx
-var H = "core.hsl", U = "safelight.hsl.styles", W = 3;
-function G(e) {
+var q = "core.hsl", J = "safelight.hsl.styles", Y = 3;
+function X(e) {
 	n(e), e.registerStylesheet({
-		id: U,
+		id: J,
 		css: v(e.ui.tokens)
 	}), e.registerProcessingStage(z(3)), e.registerPanel({
-		id: H,
+		id: q,
 		title: "HSL",
-		component: k(V(e)),
+		component: k(K(e)),
 		defaultDock: {
 			module: "develop",
 			direction: "right",
@@ -457,6 +504,6 @@ function G(e) {
 	}), e.registerSettings(T);
 }
 //#endregion
-export { W as LINE, H as PANEL_ID, U as STYLESHEET_ID, G as activate };
+export { Y as LINE, q as PANEL_ID, J as STYLESHEET_ID, X as activate };
 
 //# sourceMappingURL=index.js.map

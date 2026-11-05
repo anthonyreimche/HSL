@@ -1,7 +1,7 @@
 {
   "name": "safelight-hsl",
   "private": true,
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "HSL extension for Safelight: the per-colour hue, saturation and luminance mixer.",
   "type": "module",
   "scripts": {

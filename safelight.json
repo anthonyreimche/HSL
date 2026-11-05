@@ -1,7 +1,7 @@
 {
   "id": "safelight.hsl",
   "name": "HSL",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Per-colour hue, saturation and luminance mixer.",
   "author": "Anthony Reimche",
   "main": "dist/index.js",
