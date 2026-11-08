@@ -83,6 +83,48 @@ describe("hslStage", () => {
   });
 });
 
+describe("dormantWhen", () => {
+  it("is off on line 1, which mixes every pixel and clips what it passes", () => {
+    expect(hslStage(1).dormantWhen).toBeUndefined();
+  });
+
+  it.each([2, 3] as const)("lets line %i sleep while every band is at 0", (line) => {
+    expect(hslStage(line).dormantWhen).toEqual({ uHslActive: false });
+  });
+
+  it.each([2, 3] as const)("names a bool uniform line %i declares, and no array", (line) => {
+    const stage = hslStage(line);
+    const rule = stage.dormantWhen ?? {};
+    expect(Object.keys(rule)).not.toEqual([]);
+    for (const key of Object.keys(rule)) {
+      const uniform = stage.uniforms.find((u) => u.key === key);
+      expect(uniform?.glslType).toBe("bool");
+      expect(uniform).not.toHaveProperty("length");
+    }
+  });
+
+  const holds = (hsl: typeof DEFAULT_HSL, values: Record<string, unknown> = {}): boolean => {
+    const stage = hslStage(3);
+    const derived: Record<string, unknown> = stage.derive?.({ hsl }, prefs(values)) ?? {};
+    const rule = Object.entries(stage.dormantWhen ?? {});
+    expect(rule).not.toEqual([]);
+    return rule.every(([key, value]) => derived[key] === value);
+  };
+
+  it("holds for untouched bands, whatever Preferences ▸ HSL shapes them with", () => {
+    expect(holds(DEFAULT_HSL)).toBe(true);
+    expect(holds(DEFAULT_HSL, { hueRange: 150, smoothness: 40 })).toBe(true);
+  });
+
+  it.each([
+    ["a hue", { ...DEFAULT_HSL, hue: { ...DEFAULT_HSL.hue, red: 1 } }],
+    ["a saturation", { ...DEFAULT_HSL, saturation: { ...DEFAULT_HSL.saturation, magenta: -100 } }],
+    ["a luminance", { ...DEFAULT_HSL, luminance: { ...DEFAULT_HSL.luminance, aqua: 0.5 } }],
+  ])("breaks for %s band moved", (_, hsl) => {
+    expect(holds(hsl)).toBe(false);
+  });
+});
+
 describe("isDefaultHSL", () => {
   it("is true only when every band is at 0", () => {
     expect(isDefaultHSL(DEFAULT_HSL)).toBe(true);

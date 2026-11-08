@@ -106,6 +106,9 @@ export function hslStage(line: Line): ProcessingStageContribution {
     glsl: "if (uHslActive) c = applyHSL(clamp(c, 0.0, 1.0));",
     helpers: HSL_HELPERS,
     uniforms: [...HSL_UNIFORMS, { key: "uHslActive", glslType: "bool", default: false }],
+    // The block is skipped outright while every band is at 0, so leaving it out
+    // of the program changes nothing. Line 1 mixes, and clips, every pixel.
+    dormantWhen: { uHslActive: false },
     derive: (params, ctx) => ({ ...values(params, ctx), uHslActive: !isDefaultHSL(params.hsl) }),
   };
 }
