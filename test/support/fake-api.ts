@@ -3,11 +3,13 @@
 // a plain map; the pick-drag tool is held as core holds it, by this extension.
 // Core's Panel draws its children, and core's Slider is replaced by a stub that
 // keeps the props it was last rendered with, so a test can drive a drag and its
-// commit the way the real one would.
+// commit the way the real one would. The UI kit's Button and segmented control
+// mark what they hold the way core's fill it.
 
 import * as React from "react";
 import { create } from "zustand";
 import type {
+  ButtonProps,
   DevelopParams,
   DevelopStoreState,
   HSLAdjustments,
@@ -17,6 +19,7 @@ import type {
   PickDragTool,
   ProcessingStageContribution,
   SafelightAPI,
+  SegmentedControlProps,
   SettingsContribution,
   SliderProps,
   StoreApi,
@@ -33,13 +36,6 @@ const BAND = { red: 0, orange: 0, yellow: 0, green: 0, aqua: 0, blue: 0, purple:
 export const DEFAULT_HSL: HSLAdjustments = { hue: BAND, saturation: BAND, luminance: BAND };
 
 export const TOKENS: UiTokens = {
-  surface2: "var(--color-surface-2)",
-  surface3: "var(--color-surface-3)",
-  border: "var(--color-border)",
-  borderSubtle: "var(--color-border-subtle)",
-  accent: "var(--color-accent)",
-  textPrimary: "var(--color-text-primary)",
-  textSecondary: "var(--color-text-secondary)",
   textMuted: "var(--color-text-muted)",
 };
 
@@ -62,6 +58,24 @@ export interface Rig {
   mask: { hsl: HSLAdjustments | undefined; commits: string[] };
   /** The latest props of each slider drawn in `root`, in document order. */
   sliders(root: ParentNode): SliderProps[];
+}
+
+function Button({ active, variant: _variant, size: _size, full: _full, type = "button", children, ...rest }: ButtonProps) {
+  return React.createElement("button", { ...rest, type, "data-active": active ? "true" : undefined }, children);
+}
+
+function SegmentedControl({ value, onChange, options }: SegmentedControlProps) {
+  return React.createElement(
+    "div",
+    { "data-segmented": "" },
+    options.map((o) =>
+      React.createElement(
+        "button",
+        { key: o.value, type: "button", title: o.title, "data-active": value === o.value ? "true" : undefined, onClick: () => onChange(o.value) },
+        o.label,
+      ),
+    ),
+  );
 }
 
 export function fakeApi(hsl: HSLAdjustments = DEFAULT_HSL): Rig {
@@ -139,7 +153,7 @@ export function fakeApi(hsl: HSLAdjustments = DEFAULT_HSL): Rig {
         };
       },
     },
-    ui: { tokens: TOKENS },
+    ui: { tokens: TOKENS, Button, SegmentedControl },
   };
 
   return {

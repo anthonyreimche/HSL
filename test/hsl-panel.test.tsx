@@ -1,11 +1,11 @@
 // The panel: the Target switch holds and lets go of the canvas's pick-drag
-// tool (Escape lets go too), Tabs / All switch the layout (the preference picks
+// tool (the core lets go on Escape), Tabs / All switch the layout (the preference picks
 // the first), All shows a band switch while the target tool is on, and the
 // mixer writes the photo's bands, each gesture one step. The mask instance
 // writes the mask's own bands.
 
 import { act, cleanup, fireEvent, render, screen, within } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { selectBand } from "../src/band-store";
 import { HSL_MASK_PANEL, hslPanel } from "../src/HSLPanel";
 import { React, initRuntime } from "../src/rt";
@@ -31,6 +31,13 @@ afterEach(() => {
 
 const pressed = (name: string) => screen.getByRole("button", { name }).getAttribute("aria-pressed");
 
+/** The option a kit segmented control in the named group holds. */
+const holding = (group: string) =>
+  within(screen.getByRole("group", { name: group }))
+    .getAllByRole("button")
+    .filter((b) => b.dataset.active === "true")
+    .map((b) => b.textContent);
+
 describe("the HSL panel", () => {
   it("holds the target tool while Target is on", () => {
     const { rig, tool } = setup();
@@ -38,20 +45,29 @@ describe("the HSL panel", () => {
     fireEvent.click(screen.getByRole("button", { name: "Target" }));
     expect(rig.held()).toBe(tool);
     expect(pressed("Target")).toBe("true");
+    expect(screen.getByRole("button", { name: "Target" }).dataset.active).toBe("true");
     fireEvent.click(screen.getByRole("button", { name: "Target" }));
     expect(rig.held()).toBeNull();
   });
 
-  it("lets go of the target tool on Escape", () => {
-    const { rig } = setup();
+  it("leaves Escape to the core while the target tool is held", () => {
+    const added = vi.spyOn(window, "addEventListener");
+    setup();
     fireEvent.click(screen.getByRole("button", { name: "Target" }));
-    act(() => void window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" })));
-    expect(rig.held()).toBeNull();
+    expect(added.mock.calls.filter(([type]) => type === "keydown")).toEqual([]);
+    added.mockRestore();
+  });
+
+  it("switches layout with the kit's segmented control, opening on Tabs", () => {
+    setup();
+    expect(holding("HSL view")).toEqual(["Tabs"]);
+    fireEvent.click(within(screen.getByRole("group", { name: "HSL view" })).getByRole("button", { name: "All" }));
+    expect(holding("HSL view")).toEqual(["All"]);
   });
 
   it("opens on the layout Preferences ▸ HSL picks", () => {
     setup({ defaultView: "all" });
-    expect(pressed("All")).toBe("true");
+    expect(holding("HSL view")).toEqual(["All"]);
     expect(screen.queryByRole("group", { name: "HSL band" })).toBeNull();
   });
 
@@ -67,7 +83,9 @@ describe("the HSL panel", () => {
       "purple hue",
       "magenta hue",
     ]);
+    expect(holding("HSL band")).toEqual(["Hue"]);
     fireEvent.click(within(screen.getByRole("group", { name: "HSL band" })).getByRole("button", { name: "Sat" }));
+    expect(holding("HSL band")).toEqual(["Sat"]);
     expect(rig.sliders(view.container)[5]).toMatchObject({ ariaLabel: "blue saturation", value: -30 });
   });
 
@@ -79,7 +97,7 @@ describe("the HSL panel", () => {
     fireEvent.click(screen.getByRole("button", { name: "Target" }));
     const target = screen.getByRole("group", { name: "Target band" });
     fireEvent.click(within(target).getByRole("button", { name: "Lum" }));
-    expect(within(target).getByRole("button", { name: "Lum" }).getAttribute("aria-pressed")).toBe("true");
+    expect(holding("Target band")).toEqual(["Lum"]);
   });
 
   it("writes a slider into the photo's bands and commits under its colour", () => {

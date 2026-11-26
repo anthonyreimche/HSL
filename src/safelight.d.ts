@@ -6,11 +6,12 @@
 // The slice of Safelight's extension API this extension touches, mirrored from
 // the app's src/extensions/types.ts, src/catalog/types.ts,
 // src/state/develop-store.ts, src/modules/develop/{mask-scope,pick-drag}.ts
-// and src/ui/components/{Panel,Slider,PickerIcon}.tsx. Extensions are
+// src/ui/components/{Panel,Slider,PickerIcon}.tsx and
+// src/extensions/ui-kit.tsx. Extensions are
 // standalone bundles, so the host's source is not on the type path; React
 // types come from @types/react (dev only).
 
-import type { ComponentType, ReactNode } from "react";
+import type { ButtonHTMLAttributes, ComponentType, JSX, ReactNode } from "react";
 
 /** A release line: the process version its stage text was written for, and
  *  the extension's major version. */
@@ -66,6 +67,8 @@ export interface PanelContribution {
   title: string;
   component: ComponentType;
   defaultDock?: PanelDockDefault;
+  /** The modules the panel may be docked in; omitted, every module (Safelight 3.2.8). */
+  modules?: readonly string[];
   /** Right-clicking the panel's dock header offers "Reset to defaults". */
   onReset?: () => void;
   mask?: MaskPanelContribution;
@@ -148,14 +151,31 @@ export interface StylesheetContribution {
 
 /** The theme's CSS variables as `var(--color-…)` strings. */
 export interface UiTokens {
-  readonly surface2: string;
-  readonly surface3: string;
-  readonly border: string;
-  readonly borderSubtle: string;
-  readonly accent: string;
-  readonly textPrimary: string;
-  readonly textSecondary: string;
   readonly textMuted: string;
+}
+
+export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
+
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+    variant?: ButtonVariant;
+    size?: "sm" | "md";
+    /** Render as the selected/active state (accent fill), overriding the variant. */
+    active?: boolean;
+    /** Stretch to the container width. */
+    full?: boolean;
+}
+
+export interface SegmentedOption {
+    value: string;
+    label: ReactNode;
+    title?: string;
+}
+
+export interface SegmentedControlProps {
+    value: string;
+    onChange: (value: string) => void;
+    options: SegmentedOption[];
+    size?: "sm" | "md";
 }
 
 export interface PanelProps {
@@ -233,7 +253,11 @@ export interface SafelightAPI {
     /** The mask a PanelContribution.mask component belongs to. */
     useMaskScope(): MaskScope;
   };
-  ui: { tokens: UiTokens };
+  ui: {
+    tokens: UiTokens;
+    Button: (props: ButtonProps) => JSX.Element;
+    SegmentedControl: (props: SegmentedControlProps) => JSX.Element;
+  };
 }
 
 export interface ExtensionModule {

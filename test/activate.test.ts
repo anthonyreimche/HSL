@@ -24,6 +24,7 @@ describe("activate", () => {
         title: "HSL",
         component: expect.any(Function),
         defaultDock: { module: "develop", direction: "right", order: 11, width: 280, height: 220 },
+        modules: ["develop"],
         onReset: expect.any(Function),
         mask: HSL_MASK_PANEL,
       },
@@ -66,6 +67,6 @@ describe("activate", () => {
     const rig = fakeApi();
     activate(rig.api);
     expect(rig.stylesheets.map((s) => s.id)).toEqual([STYLESHEET_ID]);
-    expect(rig.stylesheets[0].css).toContain("var(--color-accent)");
+    expect(rig.stylesheets[0].css).toContain("var(--color-text-muted)");
   });
 });

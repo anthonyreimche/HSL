@@ -72,63 +72,44 @@ function m(e, t, n) {
 //#region src/styles.ts
 var h = "safelight-hsl", g = {
 	toolbar: `${h}-toolbar`,
-	target: `${h}-target`,
-	on: `${h}-on`,
-	group: `${h}-group`,
 	spaced: `${h}-spaced`,
-	segment: `${h}-segment`,
-	fill: `${h}-fill`,
 	bands: `${h}-bands`,
 	bandHeading: `${h}-band-heading`,
 	sliders: `${h}-sliders`,
 	row: `${h}-row`,
 	dot: `${h}-dot`,
 	grow: `${h}-grow`
-}, _ = [
-	g.target,
-	g.segment,
-	g.bandHeading
-];
-function v(e) {
+};
+function _(e) {
 	return `
 :where(.${g.toolbar}) { margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
-:where(.${g.target}) { display: flex; align-items: center; gap: 0.25rem; border-radius: 0.25rem; border: 1px solid ${e.borderSubtle}; padding: 0.125rem 0.5rem; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: ${e.textSecondary}; }
-:where(.${g.target}:hover) { border-color: ${e.border}; color: ${e.textPrimary}; }
-:where(.${g.target}.${g.on}) { border-color: ${e.accent}; background-color: color-mix(in srgb, ${e.accent} 30%, transparent); color: ${e.textPrimary}; }
-:where(.${g.group}) { display: flex; border-radius: 0.25rem; background-color: ${e.surface2}; }
 :where(.${g.spaced}) { margin-bottom: 0.5rem; }
-:where(.${g.segment}) { padding: 0.125rem 0.5rem; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: ${e.textMuted}; }
-:where(.${g.segment}:first-child) { border-top-left-radius: 0.25rem; border-bottom-left-radius: 0.25rem; }
-:where(.${g.segment}:last-child) { border-top-right-radius: 0.25rem; border-bottom-right-radius: 0.25rem; }
-:where(.${g.segment}:hover) { color: ${e.textSecondary}; }
-:where(.${g.segment}.${g.on}) { background-color: ${e.surface3}; color: ${e.textPrimary}; }
-:where(.${g.fill}) { flex: 1; padding: 0.25rem 0; }
 :where(.${g.bands} > :not(:last-child)) { margin-block: 0 0.75rem; }
 :where(.${g.bandHeading}) { margin-bottom: 0.25rem; font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; color: ${e.textMuted}; }
 :where(.${g.sliders} > :not(:last-child)) { margin-block: 0 0.125rem; }
 :where(.${g.row}) { display: flex; align-items: center; gap: 0.375rem; }
 :where(.${g.dot}) { height: 0.5rem; width: 0.5rem; flex-shrink: 0; border-radius: 9999px; }
 :where(.${g.grow}) { flex: 1; }
-${_.map((e) => `html.sl-larger-text .${e}`).join(", ")} { font-size: 12px !important; text-transform: none !important; letter-spacing: normal !important; }
-${_.map((e) => `html.sl-title-headings .${e}`).join(", ")} { text-transform: capitalize !important; }
+html.sl-larger-text .${g.bandHeading} { font-size: 12px !important; text-transform: none !important; letter-spacing: normal !important; }
+html.sl-title-headings .${g.bandHeading} { text-transform: capitalize !important; }
 `;
 }
 //#endregion
 //#region src/HSLMixer.tsx
-var y = [
+var v = [
 	{
-		key: "hue",
+		value: "hue",
 		label: "Hue"
 	},
 	{
-		key: "saturation",
+		value: "saturation",
 		label: "Sat"
 	},
 	{
-		key: "luminance",
+		value: "luminance",
 		label: "Lum"
 	}
-], b = {
+], y = {
 	red: "#e74c3c",
 	orange: "#e67e22",
 	yellow: "#f1c40f",
@@ -138,14 +119,14 @@ var y = [
 	purple: "#9b59b6",
 	magenta: "#e84393"
 };
-function x({ band: n, value: r, onChange: i, onCommit: a }) {
+function b({ band: n, value: r, onChange: i, onCommit: a }) {
 	let { Slider: o } = t.components;
 	return /* @__PURE__ */ e.createElement("div", { className: g.sliders }, l.map((t) => /* @__PURE__ */ e.createElement("div", {
 		key: t,
 		className: g.row
 	}, /* @__PURE__ */ e.createElement("span", {
 		className: g.dot,
-		style: { background: b[t] }
+		style: { background: y[t] }
 	}), /* @__PURE__ */ e.createElement("div", { className: g.grow }, /* @__PURE__ */ e.createElement(o, {
 		label: "",
 		ariaLabel: `${t} ${n}`,
@@ -156,33 +137,35 @@ function x({ band: n, value: r, onChange: i, onCommit: a }) {
 		onCommit: () => a(t)
 	})))));
 }
-function S({ value: t, onChange: n, onCommit: r, selectedBand: i, onBandChange: a, view: o = "tabs" }) {
-	let [s, c] = e.useState("hue"), l = i ?? s, u = a ?? c;
-	return o === "all" ? /* @__PURE__ */ e.createElement("div", { className: g.bands }, y.map((i) => /* @__PURE__ */ e.createElement("div", { key: i.key }, /* @__PURE__ */ e.createElement("div", { className: g.bandHeading }, i.key), /* @__PURE__ */ e.createElement(x, {
-		band: i.key,
-		value: t,
-		onChange: n,
-		onCommit: r
+function x({ value: n, onChange: r, onCommit: i, selectedBand: a, onBandChange: o, view: s = "tabs" }) {
+	let [c, l] = e.useState("hue"), u = a ?? c, d = o ?? l, { SegmentedControl: f } = t.ui;
+	return s === "all" ? /* @__PURE__ */ e.createElement("div", { className: g.bands }, v.map((t) => /* @__PURE__ */ e.createElement("div", { key: t.value }, /* @__PURE__ */ e.createElement("div", { className: g.bandHeading }, t.value), /* @__PURE__ */ e.createElement(b, {
+		band: t.value,
+		value: n,
+		onChange: r,
+		onCommit: i
 	})))) : /* @__PURE__ */ e.createElement(e.Fragment, null, /* @__PURE__ */ e.createElement("div", {
-		className: `${g.group} ${g.spaced}`,
+		className: g.spaced,
 		role: "group",
 		"aria-label": "HSL band"
-	}, y.map((t) => /* @__PURE__ */ e.createElement("button", {
-		key: t.key,
-		type: "button",
-		onClick: () => u(t.key),
-		"aria-pressed": l === t.key,
-		className: `${g.segment} ${g.fill}${l === t.key ? ` ${g.on}` : ""}`
-	}, t.label))), /* @__PURE__ */ e.createElement(x, {
-		band: l,
-		value: t,
-		onChange: n,
-		onCommit: r
+	}, /* @__PURE__ */ e.createElement(f, {
+		size: "sm",
+		value: u,
+		onChange: (e) => {
+			let t = v.find((t) => t.value === e);
+			t && d(t.value);
+		},
+		options: v
+	})), /* @__PURE__ */ e.createElement(b, {
+		band: u,
+		value: n,
+		onChange: r,
+		onCommit: i
 	}));
 }
 //#endregion
 //#region src/settings.ts
-var C = "tabs", w = .5, T = {
+var S = "tabs", C = .5, w = {
 	title: "HSL",
 	order: 60,
 	keywords: [
@@ -199,7 +182,7 @@ var C = "tabs", w = .5, T = {
 			label: "Default layout",
 			hint: "Tabs shows one band at a time; All stacks Hue, Saturation and Luminance.",
 			type: "select",
-			default: C,
+			default: S,
 			options: [{
 				value: "tabs",
 				label: "Tabs (one band)"
@@ -233,84 +216,68 @@ var C = "tabs", w = .5, T = {
 			label: "Target tool sensitivity",
 			hint: "How far an on-image drag moves the sliders (units per pixel).",
 			type: "number",
-			default: w,
+			default: C,
 			min: .1,
 			max: 1.5,
 			step: .05
 		}
 	]
-}, E = [{
-	key: "tabs",
+}, T = [{
+	value: "tabs",
 	label: "Tabs"
 }, {
-	key: "all",
+	value: "all",
 	label: "All"
-}], D = [
-	{
-		key: "hue",
-		label: "Hue"
-	},
-	{
-		key: "saturation",
-		label: "Sat"
-	},
-	{
-		key: "luminance",
-		label: "Lum"
-	}
-], O = (e, t, n, r) => ({
+}], E = (e, t, n, r) => ({
 	...e,
 	[t]: {
 		...e[t],
 		[n]: r
 	}
 });
-function k(n) {
+function D(n) {
 	return function() {
-		let { Panel: r, PickerIcon: i } = t.components, a = t.stores.useDevelopStore, s = a((e) => e.params.hsl), l = a((e) => e.setParam), u = a((e) => e.commitEdit), d = t.develop.usePickDragHeld(), f = c(), [p, m] = e.useState(() => t.settings.get("defaultView", C));
-		return e.useEffect(() => {
-			if (!d) return;
-			let e = (e) => {
-				e.key === "Escape" && t.develop.setPickDrag(null);
-			};
-			return window.addEventListener("keydown", e), () => window.removeEventListener("keydown", e);
-		}, [d]), /* @__PURE__ */ e.createElement(r, { title: "HSL" }, /* @__PURE__ */ e.createElement("div", { className: g.toolbar }, /* @__PURE__ */ e.createElement("button", {
-			type: "button",
-			onClick: () => t.develop.setPickDrag(d ? null : n),
-			"aria-pressed": d,
-			className: `${g.target}${d ? ` ${g.on}` : ""}`,
-			title: `Click-drag up/down on the image to adjust ${f}`
+		let { Panel: r, PickerIcon: i } = t.components, { Button: a, SegmentedControl: s } = t.ui, l = t.stores.useDevelopStore, u = l((e) => e.params.hsl), d = l((e) => e.setParam), f = l((e) => e.commitEdit), p = t.develop.usePickDragHeld(), m = c(), [h, _] = e.useState(() => t.settings.get("defaultView", S));
+		return /* @__PURE__ */ e.createElement(r, { title: "HSL" }, /* @__PURE__ */ e.createElement("div", { className: g.toolbar }, /* @__PURE__ */ e.createElement(a, {
+			size: "sm",
+			active: p,
+			"aria-pressed": p,
+			title: `Click-drag up/down on the image to adjust ${m}`,
+			onClick: () => t.develop.setPickDrag(p ? null : n)
 		}, /* @__PURE__ */ e.createElement(i, null), "Target"), /* @__PURE__ */ e.createElement("div", {
-			className: g.group,
 			role: "group",
 			"aria-label": "HSL view"
-		}, E.map((t) => /* @__PURE__ */ e.createElement("button", {
-			key: t.key,
-			type: "button",
-			onClick: () => m(t.key),
-			"aria-pressed": p === t.key,
-			className: `${g.segment}${p === t.key ? ` ${g.on}` : ""}`
-		}, t.label)))), p === "all" && d && /* @__PURE__ */ e.createElement("div", {
-			className: `${g.group} ${g.spaced}`,
+		}, /* @__PURE__ */ e.createElement(s, {
+			size: "sm",
+			value: h,
+			onChange: (e) => {
+				let t = T.find((t) => t.value === e);
+				t && _(t.value);
+			},
+			options: T
+		}))), h === "all" && p && /* @__PURE__ */ e.createElement("div", {
+			className: g.spaced,
 			role: "group",
 			"aria-label": "Target band"
-		}, D.map((t) => /* @__PURE__ */ e.createElement("button", {
-			key: t.key,
-			type: "button",
-			onClick: () => o(t.key),
-			"aria-pressed": f === t.key,
-			className: `${g.segment} ${g.fill}${f === t.key ? ` ${g.on}` : ""}`
-		}, t.label))), /* @__PURE__ */ e.createElement(S, {
-			value: s,
-			onChange: (e, t, n) => l("hsl", O(s, e, t, n)),
-			onCommit: (e) => void u(`HSL ${e}`),
-			selectedBand: f,
+		}, /* @__PURE__ */ e.createElement(s, {
+			size: "sm",
+			value: m,
+			onChange: (e) => {
+				let t = v.find((t) => t.value === e);
+				t && o(t.value);
+			},
+			options: v
+		})), /* @__PURE__ */ e.createElement(x, {
+			value: u,
+			onChange: (e, t, n) => d("hsl", E(u, e, t, n)),
+			onCommit: (e) => void f(`HSL ${e}`),
+			selectedBand: m,
 			onBandChange: o,
-			view: p
+			view: h
 		}));
 	};
 }
-var A = {
+var O = {
 	red: 0,
 	orange: 0,
 	yellow: 0,
@@ -319,24 +286,24 @@ var A = {
 	blue: 0,
 	purple: 0,
 	magenta: 0
-}, j = {
-	hue: A,
-	saturation: A,
-	luminance: A
+}, k = {
+	hue: O,
+	saturation: O,
+	luminance: O
 };
-function M() {
-	let n = t.develop.useMaskScope(), r = n.hsl ?? j;
-	return /* @__PURE__ */ e.createElement(S, {
+function A() {
+	let n = t.develop.useMaskScope(), r = n.hsl ?? k;
+	return /* @__PURE__ */ e.createElement(x, {
 		value: r,
-		onChange: (e, t, i) => n.setHsl(O(r, e, t, i)),
+		onChange: (e, t, i) => n.setHsl(E(r, e, t, i)),
 		onCommit: (e) => n.commit(`Mask HSL ${e}`)
 	});
 }
-var N = {
-	component: M,
+var j = {
+	component: A,
 	order: 40,
 	owns: ["hsl"]
-}, P = "safelight.hsl.mix", F = [
+}, M = "safelight.hsl.mix", N = [
 	...[
 		"uHslHue",
 		"uHslSat",
@@ -366,14 +333,14 @@ var N = {
 		glslType: "float",
 		default: 1
 	}
-], I = "vec3 applyHSL(vec3 c) {\n  vec3 hsl = rgb2hsl(c);\n  // Protect near-neutral pixels: an achromatic pixel has no real hue (rgb2hsl\n  // reports 0 = red), so without this gate the Red sliders would tint/relight\n  // every grey. Fades the whole effect in over a low saturation threshold, so\n  // genuinely coloured pixels (even pale skies/skin) still respond fully.\n  float chromaW = smoothstep(0.0, 0.10, hsl.y);\n  if (chromaW < 1e-4) return c;\n\n  float hueDeg = hsl.x * 360.0;\n\n  float hueShift = 0.0;\n  float satAdj = 0.0;\n  float lumAdj = 0.0;\n  for (int i = 0; i < 8; i++) {\n    float wi = hslBandWeight(hueDeg, HSL_CENTERS[i], HSL_DPREV[i], HSL_DNEXT[i], uHslRange, uHslSmooth);\n    hueShift += uHslHue[i] * wi;\n    satAdj   += uHslSat[i] * wi;\n    lumAdj   += uHslLum[i] * wi;\n  }\n  hueShift *= chromaW;\n  satAdj   *= chromaW;\n  lumAdj   *= chromaW;\n\n  // Hue: rotate in HSL (luminance-invariant), ±30° at full slider.\n  hsl.x = fract(hsl.x + hueShift * (30.0 / 360.0));\n  vec3 rgb = hsl2rgb(hsl);\n\n  // Saturation: perceptual. Scale chroma around the pixel's true luminance, so a\n  // cut collapses the colour to its actual grey (not HSL-L's mid-range grey) and\n  // a boost doesn't clip the bright channel into a different hue on the way up.\n  if (abs(satAdj) > 1e-4) {\n    float Lp = luma(rgb);\n    rgb = mix(vec3(Lp), rgb, clamp(1.0 + satAdj, 0.0, 2.0));\n  }\n\n  // Luminance: hue-preserving gain (ratio-scale). Darkening a blue sky or lifting\n  // reds keeps the hue and per-channel saturation intact, unlike an HSL-L add\n  // which greys and shifts the colour. Gentle factor so shadows don't blow out.\n  if (abs(lumAdj) > 1e-4) {\n    rgb *= 1.0 + lumAdj * 0.6;\n  }\n\n  return clamp(rgb, 0.0, 1.0);\n}", L = (e, t, n) => typeof e == "number" && Number.isFinite(e) ? Math.min(n, Math.max(t, e / 100)) : 1, R = (e) => [
+], P = "vec3 applyHSL(vec3 c) {\n  vec3 hsl = rgb2hsl(c);\n  // Protect near-neutral pixels: an achromatic pixel has no real hue (rgb2hsl\n  // reports 0 = red), so without this gate the Red sliders would tint/relight\n  // every grey. Fades the whole effect in over a low saturation threshold, so\n  // genuinely coloured pixels (even pale skies/skin) still respond fully.\n  float chromaW = smoothstep(0.0, 0.10, hsl.y);\n  if (chromaW < 1e-4) return c;\n\n  float hueDeg = hsl.x * 360.0;\n\n  float hueShift = 0.0;\n  float satAdj = 0.0;\n  float lumAdj = 0.0;\n  for (int i = 0; i < 8; i++) {\n    float wi = hslBandWeight(hueDeg, HSL_CENTERS[i], HSL_DPREV[i], HSL_DNEXT[i], uHslRange, uHslSmooth);\n    hueShift += uHslHue[i] * wi;\n    satAdj   += uHslSat[i] * wi;\n    lumAdj   += uHslLum[i] * wi;\n  }\n  hueShift *= chromaW;\n  satAdj   *= chromaW;\n  lumAdj   *= chromaW;\n\n  // Hue: rotate in HSL (luminance-invariant), ±30° at full slider.\n  hsl.x = fract(hsl.x + hueShift * (30.0 / 360.0));\n  vec3 rgb = hsl2rgb(hsl);\n\n  // Saturation: perceptual. Scale chroma around the pixel's true luminance, so a\n  // cut collapses the colour to its actual grey (not HSL-L's mid-range grey) and\n  // a boost doesn't clip the bright channel into a different hue on the way up.\n  if (abs(satAdj) > 1e-4) {\n    float Lp = luma(rgb);\n    rgb = mix(vec3(Lp), rgb, clamp(1.0 + satAdj, 0.0, 2.0));\n  }\n\n  // Luminance: hue-preserving gain (ratio-scale). Darkening a blue sky or lifting\n  // reds keeps the hue and per-channel saturation intact, unlike an HSL-L add\n  // which greys and shifts the colour. Gentle factor so shadows don't blow out.\n  if (abs(lumAdj) > 1e-4) {\n    rgb *= 1.0 + lumAdj * 0.6;\n  }\n\n  return clamp(rgb, 0.0, 1.0);\n}", F = (e, t, n) => typeof e == "number" && Number.isFinite(e) ? Math.min(n, Math.max(t, e / 100)) : 1, I = (e) => [
 	"hue",
 	"saturation",
 	"luminance"
 ].every((t) => l.every((n) => e[t][n] === 0));
-function z(e) {
+function L(e) {
 	let t = {
-		id: P,
+		id: M,
 		name: "HSL",
 		phase: "display-adjust",
 		anchor: "hsl"
@@ -381,33 +348,34 @@ function z(e) {
 		uHslHue: l.map((t) => e.hue[t] / 100),
 		uHslSat: l.map((t) => e.saturation[t] / 100),
 		uHslLum: l.map((t) => e.luminance[t] / 100),
-		uHslRange: L(t.settings("hueRange", 100), .25, 2),
-		uHslSmooth: L(t.settings("smoothness", 100), 0, 1)
+		uHslRange: F(t.settings("hueRange", 100), .25, 2),
+		uHslSmooth: F(t.settings("smoothness", 100), 0, 1)
 	});
 	return e === 1 ? {
 		...t,
 		glsl: "c = applyHSL(c);",
-		helpers: I,
-		uniforms: F,
+		helpers: P,
+		uniforms: N,
 		derive: n
 	} : {
 		...t,
 		glsl: "if (uHslActive) c = applyHSL(clamp(c, 0.0, 1.0));",
-		helpers: I,
-		uniforms: [...F, {
+		helpers: P,
+		uniforms: [...N, {
 			key: "uHslActive",
 			glslType: "bool",
 			default: !1
 		}],
+		dormantWhen: { uHslActive: !1 },
 		derive: (e, t) => ({
 			...n(e, t),
-			uHslActive: !R(e.hsl)
+			uHslActive: !I(e.hsl)
 		})
 	};
 }
 //#endregion
 //#region src/target.ts
-var B = .01, V = {
+var R = .01, z = {
 	red: 0,
 	orange: 0,
 	yellow: 0,
@@ -416,14 +384,14 @@ var B = .01, V = {
 	blue: 0,
 	purple: 0,
 	magenta: 0
-}, H = {
-	hue: V,
-	saturation: V,
-	luminance: V
-}, U = (e) => Object.values(e).every((e) => Object.values(e).every((e) => e === 0)), W = null, G = (e, t) => {
+}, B = {
+	hue: z,
+	saturation: z,
+	luminance: z
+}, V = (e) => Object.values(e).every((e) => Object.values(e).every((e) => e === 0)), H = null, U = (e, t) => {
 	if (e.width < 1 || e.height < 1) return null;
-	W ??= new OffscreenCanvas(1, 1);
-	let n = W.getContext("2d", { willReadFrequently: !0 });
+	H ??= new OffscreenCanvas(1, 1);
+	let n = H.getContext("2d", { willReadFrequently: !0 });
 	if (!n) return null;
 	let r = Math.min(e.width - 1, Math.max(0, Math.floor(t.x))), i = Math.min(e.height - 1, Math.max(0, Math.floor(t.y)));
 	n.clearRect(0, 0, 1, 1), n.drawImage(e, r, i, 1, 1, 0, 0, 1, 1);
@@ -434,13 +402,13 @@ var B = .01, V = {
 		s / 255
 	];
 };
-function K(e, t = G) {
-	let n = null, r = null, i = e.stores.useDevelopStore, o = ([t, n, r]) => p(m(t, n, r), L(e.settings.get("hueRange", 100), .25, 2), L(e.settings.get("smoothness", 100), 0, 1)), s = (t) => {
+function W(e, t = U) {
+	let n = null, r = null, i = e.stores.useDevelopStore, o = ([t, n, r]) => p(m(t, n, r), F(e.settings.get("hueRange", 100), .25, 2), F(e.settings.get("smoothness", 100), 0, 1)), s = (t) => {
 		if (!t.weights || t.y === null) return;
 		t.moved = !0;
-		let n = -(t.y - t.startY) * e.settings.get("pickerSensitivity", w), { hsl: r } = i.getState().params, o = a(), s = { ...r[o] };
+		let n = -(t.y - t.startY) * e.settings.get("pickerSensitivity", C), { hsl: r } = i.getState().params, o = a(), s = { ...r[o] };
 		t.weights.forEach((e, r) => {
-			e < B || (s[l[r]] = Math.max(-100, Math.min(100, t.start[r] + n * e)));
+			e < R || (s[l[r]] = Math.max(-100, Math.min(100, t.start[r] + n * e)));
 		}), i.getState().setParam("hsl", {
 			...r,
 			[o]: s
@@ -450,7 +418,7 @@ function K(e, t = G) {
 	}, u = async (n, r) => {
 		let a = await e.develop.captureFrame({
 			...i.getState().params,
-			hsl: H
+			hsl: B
 		});
 		try {
 			return t(a, r) ?? n;
@@ -468,7 +436,7 @@ function K(e, t = G) {
 				moved: !1,
 				released: !1
 			};
-			n = p, r = p, U(d) ? p.weights = o(e) : u(e, t).catch(() => e).then((e) => {
+			n = p, r = p, V(d) ? p.weights = o(e) : u(e, t).catch(() => e).then((e) => {
 				r === p && (p.weights = o(e), s(p), p.released && c(p));
 			});
 		},
@@ -483,15 +451,15 @@ function K(e, t = G) {
 }
 //#endregion
 //#region src/index.tsx
-var q = "core.hsl", J = "safelight.hsl.styles", Y = 3;
-function X(e) {
+var G = "core.hsl", K = "safelight.hsl.styles", q = 3;
+function J(e) {
 	n(e), e.registerStylesheet({
-		id: J,
-		css: v(e.ui.tokens)
-	}), e.registerProcessingStage(z(3)), e.registerPanel({
-		id: q,
+		id: K,
+		css: _(e.ui.tokens)
+	}), e.registerProcessingStage(L(3)), e.registerPanel({
+		id: G,
 		title: "HSL",
-		component: k(K(e)),
+		component: D(W(e)),
 		defaultDock: {
 			module: "develop",
 			direction: "right",
@@ -499,11 +467,12 @@ function X(e) {
 			width: 280,
 			height: 220
 		},
+		modules: ["develop"],
 		onReset: () => void e.stores.useDevelopStore.getState().resetParams(["hsl"], "Reset HSL"),
-		mask: N
-	}), e.registerSettings(T);
+		mask: j
+	}), e.registerSettings(w);
 }
 //#endregion
-export { Y as LINE, q as PANEL_ID, J as STYLESHEET_ID, X as activate };
+export { q as LINE, G as PANEL_ID, K as STYLESHEET_ID, J as activate };
 
 //# sourceMappingURL=index.js.map

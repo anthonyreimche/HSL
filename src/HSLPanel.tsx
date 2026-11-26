@@ -9,21 +9,15 @@
 // only.
 
 import { useSelectedBand, selectBand } from "./band-store";
-import { HSLMixer } from "./HSLMixer";
+import { BAND_OPTIONS, HSLMixer } from "./HSLMixer";
 import { React, api } from "./rt";
 import type { HSLAdjustments, HSLBand, HSLChannel, MaskPanelContribution, PickDragTool } from "./safelight";
 import { VIEW_DEFAULT, type HslView } from "./settings";
 import { cls } from "./styles";
 
-const VIEWS: { key: HslView; label: string }[] = [
-  { key: "tabs", label: "Tabs" },
-  { key: "all", label: "All" },
-];
-
-const TARGET_BANDS: { key: HSLBand; label: string }[] = [
-  { key: "hue", label: "Hue" },
-  { key: "saturation", label: "Sat" },
-  { key: "luminance", label: "Lum" },
+const VIEWS: { value: HslView; label: string }[] = [
+  { value: "tabs", label: "Tabs" },
+  { value: "all", label: "All" },
 ];
 
 const withValue = (hsl: HSLAdjustments, band: HSLBand, channel: HSLChannel, value: number): HSLAdjustments => ({
@@ -35,6 +29,7 @@ const withValue = (hsl: HSLAdjustments, band: HSLBand, channel: HSLChannel, valu
 export function hslPanel(target: PickDragTool) {
   return function HSLPanel() {
     const { Panel, PickerIcon } = api.components;
+    const { Button, SegmentedControl } = api.ui;
     const useDevelopStore = api.stores.useDevelopStore;
     const hsl = useDevelopStore((s) => s.params.hsl);
     const setParam = useDevelopStore((s) => s.setParam);
@@ -43,60 +38,46 @@ export function hslPanel(target: PickDragTool) {
     const band = useSelectedBand();
     const [view, setView] = React.useState<HslView>(() => api.settings.get("defaultView", VIEW_DEFAULT));
 
-    // Escape puts the target tool down.
-    React.useEffect(() => {
-      if (!picking) return;
-      const onKey = (e: KeyboardEvent) => {
-        if (e.key === "Escape") api.develop.setPickDrag(null);
-      };
-      window.addEventListener("keydown", onKey);
-      return () => window.removeEventListener("keydown", onKey);
-    }, [picking]);
-
     return (
       <Panel title="HSL">
         <div className={cls.toolbar}>
-          <button
-            type="button"
-            onClick={() => api.develop.setPickDrag(picking ? null : target)}
+          <Button
+            size="sm"
+            active={picking}
             aria-pressed={picking}
-            className={`${cls.target}${picking ? ` ${cls.on}` : ""}`}
             title={`Click-drag up/down on the image to adjust ${band}`}
+            onClick={() => api.develop.setPickDrag(picking ? null : target)}
           >
             <PickerIcon />
             Target
-          </button>
+          </Button>
 
-          <div className={cls.group} role="group" aria-label="HSL view">
-            {VIEWS.map((v) => (
-              <button
-                key={v.key}
-                type="button"
-                onClick={() => setView(v.key)}
-                aria-pressed={view === v.key}
-                className={`${cls.segment}${view === v.key ? ` ${cls.on}` : ""}`}
-              >
-                {v.label}
-              </button>
-            ))}
+          <div role="group" aria-label="HSL view">
+            <SegmentedControl
+              size="sm"
+              value={view}
+              onChange={(v) => {
+                const picked = VIEWS.find((o) => o.value === v);
+                if (picked) setView(picked.value);
+              }}
+              options={VIEWS}
+            />
           </div>
         </div>
 
         {/* The All layout has no band tabs, so while the target tool is on a
             compact band switch gives the drag its target. */}
         {view === "all" && picking && (
-          <div className={`${cls.group} ${cls.spaced}`} role="group" aria-label="Target band">
-            {TARGET_BANDS.map((b) => (
-              <button
-                key={b.key}
-                type="button"
-                onClick={() => selectBand(b.key)}
-                aria-pressed={band === b.key}
-                className={`${cls.segment} ${cls.fill}${band === b.key ? ` ${cls.on}` : ""}`}
-              >
-                {b.label}
-              </button>
-            ))}
+          <div className={cls.spaced} role="group" aria-label="Target band">
+            <SegmentedControl
+              size="sm"
+              value={band}
+              onChange={(b) => {
+                const picked = BAND_OPTIONS.find((o) => o.value === b);
+                if (picked) selectBand(picked.value);
+              }}
+              options={BAND_OPTIONS}
+            />
           </div>
         )}
 

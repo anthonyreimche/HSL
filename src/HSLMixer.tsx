@@ -12,10 +12,10 @@ import { React, api } from "./rt";
 import type { HSLAdjustments, HSLBand, HSLChannel } from "./safelight";
 import { cls } from "./styles";
 
-const BANDS: { key: HSLBand; label: string }[] = [
-  { key: "hue", label: "Hue" },
-  { key: "saturation", label: "Sat" },
-  { key: "luminance", label: "Lum" },
+export const BAND_OPTIONS: { value: HSLBand; label: string }[] = [
+  { value: "hue", label: "Hue" },
+  { value: "saturation", label: "Sat" },
+  { value: "luminance", label: "Lum" },
 ];
 
 export const HSL_CHANNEL_COLORS: Record<HSLChannel, string> = {
@@ -80,14 +80,15 @@ export function HSLMixer({ value, onChange, onCommit, selectedBand, onBandChange
   const [internalBand, setInternalBand] = React.useState<HSLBand>("hue");
   const band = selectedBand ?? internalBand;
   const setBand = onBandChange ?? setInternalBand;
+  const { SegmentedControl } = api.ui;
 
   if (view === "all") {
     return (
       <div className={cls.bands}>
-        {BANDS.map((b) => (
-          <div key={b.key}>
-            <div className={cls.bandHeading}>{b.key}</div>
-            <BandSliders band={b.key} value={value} onChange={onChange} onCommit={onCommit} />
+        {BAND_OPTIONS.map((b) => (
+          <div key={b.value}>
+            <div className={cls.bandHeading}>{b.value}</div>
+            <BandSliders band={b.value} value={value} onChange={onChange} onCommit={onCommit} />
           </div>
         ))}
       </div>
@@ -96,18 +97,16 @@ export function HSLMixer({ value, onChange, onCommit, selectedBand, onBandChange
 
   return (
     <>
-      <div className={`${cls.group} ${cls.spaced}`} role="group" aria-label="HSL band">
-        {BANDS.map((b) => (
-          <button
-            key={b.key}
-            type="button"
-            onClick={() => setBand(b.key)}
-            aria-pressed={band === b.key}
-            className={`${cls.segment} ${cls.fill}${band === b.key ? ` ${cls.on}` : ""}`}
-          >
-            {b.label}
-          </button>
-        ))}
+      <div className={cls.spaced} role="group" aria-label="HSL band">
+        <SegmentedControl
+          size="sm"
+          value={band}
+          onChange={(b) => {
+            const picked = BAND_OPTIONS.find((o) => o.value === b);
+            if (picked) setBand(picked.value);
+          }}
+          options={BAND_OPTIONS}
+        />
       </div>
       <BandSliders band={band} value={value} onChange={onChange} onCommit={onCommit} />
     </>

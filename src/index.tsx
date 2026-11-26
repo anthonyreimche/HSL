@@ -31,6 +31,7 @@ export function activate(host: SafelightAPI): void {
     title: "HSL",
     component: hslPanel(targetTool(host)),
     defaultDock: { module: "develop", direction: "right", order: 11, width: 280, height: 220 },
+    modules: ["develop"],
     onReset: () => void host.stores.useDevelopStore.getState().resetParams(["hsl"], "Reset HSL"),
     mask: HSL_MASK_PANEL,
   });
